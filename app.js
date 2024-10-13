@@ -6,7 +6,7 @@ let totalBreakTime = 0;
 let totalLunchTime = 0;
 let timerInterval;
 let elapsedTime = 0;
-let geoData = [];
+let tripId;
 
 // Retrieve query parameters from URL
 const urlParams = new URLSearchParams(window.location.search);
@@ -17,7 +17,7 @@ const token = urlParams.get('token');
 document.getElementById('userName').innerText = `Welcome, ${email}`;
 
 // Initialize Radar with your publishable API key
-Radar.initialize(prj_test_pk_a6abec81587298e0de2dab0fbfcff5118e28e4c1); // Replace with your Radar publishable API key
+Radar.initialize('your_publishable_key'); // Replace with your Radar publishable API key
 
 // Request location permissions
 Radar.requestPermissions(true);
@@ -41,18 +41,33 @@ function startShift() {
   // Start the timer
   timerInterval = setInterval(updateTimeKeeper, 1000);
 
-  // Start continuous location tracking
-  Radar.startTrackingContinuous();
+  // Start Radar trip tracking
+  const tripOptions = {
+    externalId: `${email}_${shiftStartTime.getTime()}`,
+    metadata: {
+      email: email,
+      shiftStartTime: shiftStartTime.toISOString()
+    },
+    mode: 'car', // Change to appropriate mode: 'car', 'truck', 'motorbike', 'bicycle', 'foot'
+    destinationGeofenceTag: '', // Optional
+    destinationGeofenceExternalId: '' // Optional
+  };
 
-  // Handle location updates
-  Radar.on('location', function(status, location, user) {
+  Radar.startTrip(tripOptions, (status, trip, events) => {
     if (status === Radar.STATUS.SUCCESS) {
-      geoData.push({
-        latitude: location.latitude,
-        longitude: location.longitude,
-        timestamp: new Date().toISOString()
-      });
+      tripId = trip._id;
+      console.log('Trip started:', tripId);
+    } else {
+      console.error('Error starting trip:', status);
     }
+  });
+
+  // Start foreground tracking
+  Radar.startTracking({
+    priority: 'responsiveness', // 'efficiency', 'responsiveness', or 'continuous'
+    offline: 'replayOff', // 'replayOff' or 'replay'
+    sync: 'all', // 'all', 'possibleStateChanges', 'none'
+    showBlueBar: true // iOS only
   });
 }
 
@@ -70,6 +85,9 @@ function takeBreak() {
   breakStartTime = new Date();
   document.getElementById('takeBreak').disabled = true;
   document.getElementById('endBreak').disabled = false;
+
+  // Pause tracking during break
+  Radar.stopTracking();
 }
 
 // Function to end a break
@@ -78,6 +96,14 @@ function endBreak() {
   totalBreakTime += breakEndTime - breakStartTime;
   document.getElementById('takeBreak').disabled = false;
   document.getElementById('endBreak').disabled = true;
+
+  // Resume tracking after break
+  Radar.startTracking({
+    priority: 'responsiveness',
+    offline: 'replayOff',
+    sync: 'all',
+    showBlueBar: true
+  });
 }
 
 // Function to take lunch
@@ -85,6 +111,9 @@ function takeLunch() {
   lunchStartTime = new Date();
   document.getElementById('takeLunch').disabled = true;
   document.getElementById('endLunch').disabled = false;
+
+  // Pause tracking during lunch
+  Radar.stopTracking();
 }
 
 // Function to end lunch
@@ -93,6 +122,14 @@ function endLunch() {
   totalLunchTime += lunchEndTime - lunchStartTime;
   document.getElementById('takeLunch').disabled = false;
   document.getElementById('endLunch').disabled = true;
+
+  // Resume tracking after lunch
+  Radar.startTracking({
+    priority: 'responsiveness',
+    offline: 'replayOff',
+    sync: 'all',
+    showBlueBar: true
+  });
 }
 
 // Function to end the shift
@@ -100,14 +137,17 @@ function endShift() {
   shiftEndTime = new Date();
   clearInterval(timerInterval);
 
-  // Stop location tracking
-  Radar.stopTracking();
-
   document.getElementById('endShift').disabled = true;
   document.getElementById('takeBreak').disabled = true;
   document.getElementById('endBreak').disabled = true;
   document.getElementById('takeLunch').disabled = true;
   document.getElementById('endLunch').disabled = true;
+
+  // Complete the Radar trip
+  Radar.completeTrip();
+
+  // Stop tracking
+  Radar.stopTracking();
 
   // Prepare data payload
   const payload = {
@@ -118,11 +158,11 @@ function endShift() {
     totalElapsedTime: elapsedTime,
     totalBreakTime: Math.floor(totalBreakTime / 1000),
     totalLunchTime: Math.floor(totalLunchTime / 1000),
-    geoData: geoData
+    tripId: tripId // Include the trip ID
   };
 
   // Send data to make.com webhook
-  fetch(https://hook.us1.make.com/sdse3cu8l3xos94dws1l5xaye3esmv7n, { // Replace with your make.com webhook URL
+  fetch('https://hook.make.com/your-webhook-url', { // Replace with your make.com webhook URL
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -133,7 +173,7 @@ function endShift() {
     if (response.ok) {
       alert('Shift data submitted successfully.');
       // Optionally, redirect or close the window
-      window.location.href = https://revalate.evaassist.app/dl/63ace4; // Replace with your Glide app URL
+      window.location.href = 'https://your-glide-app-url'; // Replace with your Glide app URL
     } else {
       alert('Error submitting shift data.');
     }
