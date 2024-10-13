@@ -17,7 +17,7 @@ const token = urlParams.get('token');
 document.getElementById('userName').innerText = `Welcome, ${email}`;
 
 // Initialize Radar with your publishable API key
-Radar.initialize('your_publishable_key'); // Replace with your Radar publishable API key
+Radar.initialize(prj_test_pk_a6abec81587298e0de2dab0fbfcff5118e28e4c1); // Replace with your Radar publishable API key
 
 // Request location permissions
 Radar.requestPermissions(true);
