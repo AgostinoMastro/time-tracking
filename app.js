@@ -122,7 +122,7 @@ function endShift() {
   };
 
   // Send data to make.com webhook
-  fetch('https://hook.make.com/your-webhook-url', { // Replace with your make.com webhook URL
+  fetch(https://hook.us1.make.com/sdse3cu8l3xos94dws1l5xaye3esmv7n, { // Replace with your make.com webhook URL
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -133,7 +133,7 @@ function endShift() {
     if (response.ok) {
       alert('Shift data submitted successfully.');
       // Optionally, redirect or close the window
-      window.location.href = 'https://your-glide-app-url'; // Replace with your Glide app URL
+      window.location.href = https://revalate.evaassist.app/dl/63ace4; // Replace with your Glide app URL
     } else {
       alert('Error submitting shift data.');
     }
