@@ -1,0 +1,39 @@
+body {
+  background-color: #FFFFFF;
+  color: #000000;
+  font-family: Arial, sans-serif;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+}
+
+#userName {
+  margin-top: 20px;
+}
+
+#timeKeeper {
+  font-size: 48px;
+  margin: 20px 0;
+}
+
+.button-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+button {
+  background-color: #000000;
+  color: #FFFFFF;
+  border: none;
+  padding: 15px 30px;
+  margin: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  width: 200px;
+}
+
+button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
